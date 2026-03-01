@@ -22,6 +22,7 @@ export interface AIConversation {
   id: string
   sessionId: string
   title: string | null
+  assistantId: string
   createdAt: number
   updatedAt: number
 }
@@ -416,8 +417,8 @@ export const aiApi = {
   /**
    * 创建 AI 对话
    */
-  createConversation: (sessionId: string, title?: string): Promise<AIConversation> => {
-    return ipcRenderer.invoke('ai:createConversation', sessionId, title)
+  createConversation: (sessionId: string, title?: string, assistantId?: string): Promise<AIConversation> => {
+    return ipcRenderer.invoke('ai:createConversation', sessionId, title, assistantId)
   },
 
   /**
@@ -661,6 +662,76 @@ export const llmApi = {
   },
 }
 
+// ==================== Assistant API ====================
+
+export interface AssistantSummary {
+  id: string
+  name: string
+  description: string
+  presetQuestions: string[]
+  order?: number
+  builtinId?: string
+  isUserModified?: boolean
+  applicableChatTypes?: ('group' | 'private')[]
+  supportedLocales?: string[]
+}
+
+export interface AssistantConfigFull {
+  id: string
+  name: string
+  description: string
+  systemPrompt: string
+  responseRules?: string
+  presetQuestions: string[]
+  allowedBuiltinTools?: string[]
+  customSkills?: unknown[]
+  version: number
+  builtinId?: string
+  isUserModified?: boolean
+  order?: number
+  applicableChatTypes?: ('group' | 'private')[]
+  supportedLocales?: string[]
+}
+
+export const assistantApi = {
+  getAll: (): Promise<AssistantSummary[]> => {
+    return ipcRenderer.invoke('assistant:getAll')
+  },
+
+  getConfig: (id: string): Promise<AssistantConfigFull | null> => {
+    return ipcRenderer.invoke('assistant:getConfig', id)
+  },
+
+  update: (
+    id: string,
+    updates: Partial<AssistantConfigFull>
+  ): Promise<{ success: boolean; error?: string }> => {
+    return ipcRenderer.invoke('assistant:update', id, updates)
+  },
+
+  create: (
+    config: Omit<AssistantConfigFull, 'id' | 'version'>
+  ): Promise<{ success: boolean; id?: string; error?: string }> => {
+    return ipcRenderer.invoke('assistant:create', config)
+  },
+
+  delete: (id: string): Promise<{ success: boolean; error?: string }> => {
+    return ipcRenderer.invoke('assistant:delete', id)
+  },
+
+  reset: (id: string): Promise<{ success: boolean; error?: string }> => {
+    return ipcRenderer.invoke('assistant:reset', id)
+  },
+
+  backupOldPresets: (data: {
+    customPresets?: unknown[]
+    builtinOverrides?: Record<string, unknown>
+    remotePresetIds?: string[]
+  }): Promise<{ success: boolean; filePath?: string; error?: string }> => {
+    return ipcRenderer.invoke('assistant:backupOldPresets', data)
+  },
+}
+
 // ==================== Agent API ====================
 
 export const agentApi = {
@@ -680,7 +751,8 @@ export const agentApi = {
     chatType?: 'group' | 'private',
     promptConfig?: PromptConfig,
     locale?: string,
-    maxHistoryRounds?: number
+    maxHistoryRounds?: number,
+    assistantId?: string
   ): { requestId: string; promise: Promise<{ success: boolean; result?: AgentResult; error?: string }> } => {
     // 防御性处理：确保传给 IPC 的 context 是“可结构化克隆”的纯对象
     // 避免调用方误传入响应式 Proxy（例如 Pinia/Vue state）导致 invoke 失败
@@ -759,7 +831,8 @@ export const agentApi = {
           chatType,
           promptConfig,
           locale,
-          maxHistoryRounds
+          maxHistoryRounds,
+          assistantId
         )
         .then((result) => {
           console.log('[preload] Agent invoke 返回:', result)

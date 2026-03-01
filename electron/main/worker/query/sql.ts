@@ -82,7 +82,11 @@ export function getSchema(sessionId: string): TableSchema[] {
  * - 强制 stmt.readonly 检查（better-sqlite3 原生特性）
  * - 参数化执行（防注入 + 预编译缓存）
  */
-export function executePluginQuery<T = Record<string, any>>(sessionId: string, sql: string, params: any[] = []): T[] {
+export function executePluginQuery<T = Record<string, any>>(
+  sessionId: string,
+  sql: string,
+  params: any[] | Record<string, any> = []
+): T[] {
   const db = openDatabase(sessionId)
   if (!db) {
     throw new Error('数据库不存在')
@@ -95,8 +99,11 @@ export function executePluginQuery<T = Record<string, any>>(sessionId: string, s
     throw new Error('Plugin Security Violation: Only READ-ONLY statements are allowed.')
   }
 
-  // 参数化执行
-  return stmt.all(...params) as T[]
+  // better-sqlite3 支持位置参数（数组展开）和命名参数（对象）
+  if (Array.isArray(params)) {
+    return stmt.all(...params) as T[]
+  }
+  return stmt.all(params) as T[]
 }
 
 /**

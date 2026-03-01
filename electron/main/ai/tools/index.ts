@@ -207,12 +207,19 @@ function anonymizeMessageNames(messages: PreprocessableMessage[], ownerPlatformI
  * 根据配置动态过滤工具（如：语义搜索工具仅在启用 Embedding 时可用）
  * 根据当前 locale 动态翻译工具描述
  * 统一包装预处理层
+ *
+ * @param context 工具上下文
+ * @param allowedTools 工具名称白名单（为空或 undefined 时返回全部工具）
  */
-export function getAllTools(context: ToolContext): AgentTool<any>[] {
-  const tools: AgentTool<any>[] = coreFactories.map((f) => f(context))
+export function getAllTools(context: ToolContext, allowedTools?: string[]): AgentTool<any>[] {
+  let tools: AgentTool<any>[] = coreFactories.map((f) => f(context))
 
   if (isEmbeddingEnabled()) {
     tools.push(createSemanticSearchMessages(context))
+  }
+
+  if (allowedTools && allowedTools.length > 0) {
+    tools = tools.filter((t) => allowedTools.includes(t.name))
   }
 
   return tools.map(translateTool).map((t) => wrapWithPreprocessing(t, context))

@@ -9,6 +9,8 @@ import { aiLogger, setDebugMode } from '../ai/logger'
 import { getLogsDir } from '../paths'
 import { Agent, type AgentStreamChunk, type PromptConfig } from '../ai/agent'
 import { getActiveConfig, buildPiModel } from '../ai/llm'
+import * as assistantManager from '../ai/assistant'
+import type { AssistantConfig } from '../ai/assistant/types'
 import { completeSimple, streamSimple, type TextContent as PiTextContent } from '@mariozechner/pi-ai'
 import { t } from '../i18n'
 import type { ToolContext } from '../ai/tools/types'
@@ -114,6 +116,14 @@ function formatAIError(error: unknown): string {
 export function registerAIHandlers({ win }: IpcContext): void {
   console.log('[IPC] Registering AI handlers...')
 
+  // 初始化助手管理器（同步内置助手、加载用户助手）
+  try {
+    assistantManager.initAssistantManager()
+    console.log('[IPC] Assistant manager initialized')
+  } catch (error) {
+    console.error('[IPC] Failed to initialize assistant manager:', error)
+  }
+
   // ==================== Debug 模式 ====================
 
   ipcMain.on('app:setDebugMode', (_, enabled: boolean) => {
@@ -127,9 +137,9 @@ export function registerAIHandlers({ win }: IpcContext): void {
    * 创建新的 AI 对话
    * 参数契约与 preload / 数据层保持一致：(sessionId, title?)
    */
-  ipcMain.handle('ai:createConversation', async (_, sessionId: string, title?: string) => {
+  ipcMain.handle('ai:createConversation', async (_, sessionId: string, title?: string, assistantId?: string) => {
     try {
-      return aiConversations.createConversation(sessionId, title)
+      return aiConversations.createConversation(sessionId, title, assistantId)
     } catch (error) {
       console.error('Failed to create AI conversation:', error)
       throw error
@@ -559,6 +569,80 @@ export function registerAIHandlers({ win }: IpcContext): void {
     }
   )
 
+  // ==================== 助手管理 API ====================
+
+  ipcMain.handle('assistant:getAll', async () => {
+    try {
+      return assistantManager.getAllAssistants()
+    } catch (error) {
+      console.error('Failed to get assistants:', error)
+      return []
+    }
+  })
+
+  ipcMain.handle('assistant:getConfig', async (_, id: string) => {
+    try {
+      return assistantManager.getAssistantConfig(id)
+    } catch (error) {
+      console.error('Failed to get assistant config:', error)
+      return null
+    }
+  })
+
+  ipcMain.handle('assistant:update', async (_, id: string, updates: Partial<AssistantConfig>) => {
+    try {
+      return assistantManager.updateAssistant(id, updates)
+    } catch (error) {
+      console.error('Failed to update assistant:', error)
+      return { success: false, error: String(error) }
+    }
+  })
+
+  ipcMain.handle(
+    'assistant:create',
+    async (_, config: Omit<AssistantConfig, 'id' | 'version'>) => {
+      try {
+        return assistantManager.createAssistant(config)
+      } catch (error) {
+        console.error('Failed to create assistant:', error)
+        return { success: false, error: String(error) }
+      }
+    }
+  )
+
+  ipcMain.handle('assistant:delete', async (_, id: string) => {
+    try {
+      return assistantManager.deleteAssistant(id)
+    } catch (error) {
+      console.error('Failed to delete assistant:', error)
+      return { success: false, error: String(error) }
+    }
+  })
+
+  ipcMain.handle('assistant:reset', async (_, id: string) => {
+    try {
+      return assistantManager.resetAssistant(id)
+    } catch (error) {
+      console.error('Failed to reset assistant:', error)
+      return { success: false, error: String(error) }
+    }
+  })
+
+  ipcMain.handle(
+    'assistant:backupOldPresets',
+    async (
+      _,
+      data: { customPresets?: unknown[]; builtinOverrides?: Record<string, unknown>; remotePresetIds?: string[] }
+    ) => {
+      try {
+        return assistantManager.backupOldPromptPresets(data)
+      } catch (error) {
+        console.error('Failed to backup old presets:', error)
+        return { success: false, error: String(error) }
+      }
+    }
+  )
+
   // ==================== AI Agent API ====================
 
   /**
@@ -569,6 +653,7 @@ export function registerAIHandlers({ win }: IpcContext): void {
    * @param promptConfig 用户自定义提示词配置（可选）
    * @param locale 语言设置（可选，默认 'zh-CN'）
    * @param maxHistoryRounds 前端用户配置的最大历史轮数（可选，每轮 = user + assistant = 2 条）
+   * @param assistantId 助手 ID（可选，传入时从 AssistantManager 获取配置）
    */
   ipcMain.handle(
     'agent:runStream',
@@ -580,7 +665,8 @@ export function registerAIHandlers({ win }: IpcContext): void {
       chatType?: 'group' | 'private',
       promptConfig?: PromptConfig,
       locale?: string,
-      maxHistoryRounds?: number
+      maxHistoryRounds?: number,
+      assistantId?: string
     ) => {
       aiLogger.info('IPC', `Agent stream request received: ${requestId}`, {
         userMessage: userMessage.slice(0, 100),
@@ -588,6 +674,7 @@ export function registerAIHandlers({ win }: IpcContext): void {
         conversationId: context.conversationId,
         chatType: chatType ?? 'group',
         hasPromptConfig: !!promptConfig,
+        assistantId: assistantId ?? '(none)',
       })
 
       try {
@@ -622,6 +709,15 @@ export function registerAIHandlers({ win }: IpcContext): void {
             : '(disabled)',
         })
 
+        // 如果指定了 assistantId，从 AssistantManager 加载助手配置
+        let assistantConfig: AssistantConfig | undefined
+        if (assistantId) {
+          assistantConfig = assistantManager.getAssistantConfig(assistantId) ?? undefined
+          if (!assistantConfig) {
+            aiLogger.warn('IPC', `Assistant not found: ${assistantId}, falling back to default`)
+          }
+        }
+
         const agent = new Agent(
           context,
           piModel,
@@ -629,7 +725,8 @@ export function registerAIHandlers({ win }: IpcContext): void {
           { abortSignal: abortController.signal, contextHistoryLimit },
           chatType ?? 'group',
           promptConfig,
-          locale ?? 'zh-CN'
+          locale ?? 'zh-CN',
+          assistantConfig
         )
 
         // 异步执行，通过事件发送流式数据

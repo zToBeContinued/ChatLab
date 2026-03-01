@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia'
 import { usePromptStore } from '@/stores/prompt'
 import { useSessionStore } from '@/stores/session'
 import { useSettingsStore } from '@/stores/settings'
+import { useAssistantStore } from '@/stores/assistant'
 import type { TokenUsage, AgentRuntimeStatus } from '@electron/shared/types'
 
 // 工具调用记录
@@ -89,10 +90,11 @@ export function useAIChat(
   chatType: 'group' | 'private' = 'group',
   locale: string = 'zh-CN'
 ) {
-  // 获取 chat store 中的提示词配置和全局设置
+  // 获取 store
   const promptStore = usePromptStore()
   const sessionStore = useSessionStore()
   const settingsStore = useSettingsStore()
+  const assistantStore = useAssistantStore()
   const { activePreset, aiGlobalSettings } = storeToRefs(promptStore)
 
   // 获取当前聊天类型对应的提示词配置（使用统一的激活预设）
@@ -362,10 +364,13 @@ export function useAIChat(
     }
 
     try {
+      // 当前选中的助手 ID（如果有）
+      const currentAssistantId = assistantStore.selectedAssistantId ?? undefined
+
       // 确保对话 ID 存在（数据流倒置：Agent 从 SQLite 读取历史，需要有效的 conversationId）
       if (!currentConversationId.value) {
         const title = content.slice(0, 50) + (content.length > 50 ? '...' : '')
-        const conversation = await window.aiApi.createConversation(sessionId, title)
+        const conversation = await window.aiApi.createConversation(sessionId, title, currentAssistantId)
         currentConversationId.value = conversation.id
         contextConversationId.value = conversation.id
         console.log('[AI] 提前创建对话:', conversation.id)
@@ -533,12 +538,15 @@ export function useAIChat(
           }
         },
         chatType,
-        {
-          roleDefinition: currentPromptConfig.value.roleDefinition,
-          responseRules: currentPromptConfig.value.responseRules,
-        },
+        currentAssistantId
+          ? undefined
+          : {
+              roleDefinition: currentPromptConfig.value.roleDefinition,
+              responseRules: currentPromptConfig.value.responseRules,
+            },
         locale,
-        maxHistoryRounds
+        maxHistoryRounds,
+        currentAssistantId
       )
 
       // 存储 Agent 请求 ID（用于中止）
@@ -650,9 +658,14 @@ export function useAIChat(
   async function loadConversation(conversationId: string): Promise<void> {
     console.log('[AI] 加载对话历史，conversationId:', conversationId)
     try {
+      // 获取对话元信息以恢复助手绑定
+      const conversation = await window.aiApi.getConversation(conversationId)
+      if (conversation?.assistantId) {
+        assistantStore.selectAssistant(conversation.assistantId)
+      }
+
       const history = await window.aiApi.getMessages(conversationId)
       currentConversationId.value = conversationId
-      // 加载历史对话时，绑定到真实 conversationId，确保同一历史会话复用上下文时间线
       contextConversationId.value = conversationId
 
       console.log(

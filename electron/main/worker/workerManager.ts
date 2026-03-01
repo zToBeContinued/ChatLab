@@ -237,7 +237,7 @@ export async function query<T = any>(type: string, payload: any): Promise<T> {
 export async function pluginQuery<T = Record<string, any>>(
   sessionId: string,
   sql: string,
-  params: any[] = []
+  params: any[] | Record<string, any> = []
 ): Promise<T[]> {
   return sendToWorker('pluginQuery', { sessionId, sql, params }, 120000)
 }

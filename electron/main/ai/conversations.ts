@@ -76,13 +76,23 @@ function getAiDb(): Database.Database {
 function migrateAiDatabase(db: Database.Database): void {
   try {
     // 获取 ai_message 表的列信息
-    const tableInfo = db.pragma('table_info(ai_message)') as Array<{ name: string }>
-    const columnNames = tableInfo.map((col) => col.name)
+    const messageTableInfo = db.pragma('table_info(ai_message)') as Array<{ name: string }>
+    const messageColumns = messageTableInfo.map((col) => col.name)
 
     // 检查并添加 content_blocks 列
-    if (!columnNames.includes('content_blocks')) {
+    if (!messageColumns.includes('content_blocks')) {
       db.exec('ALTER TABLE ai_message ADD COLUMN content_blocks TEXT')
       console.log('[AI DB Migration] Adding content_blocks column')
+    }
+
+    // 获取 ai_conversation 表的列信息
+    const convTableInfo = db.pragma('table_info(ai_conversation)') as Array<{ name: string }>
+    const convColumns = convTableInfo.map((col) => col.name)
+
+    // 检查并添加 assistant_id 列（旧对话默认归属 general 助手）
+    if (!convColumns.includes('assistant_id')) {
+      db.exec("ALTER TABLE ai_conversation ADD COLUMN assistant_id TEXT DEFAULT 'general'")
+      console.log('[AI DB Migration] Adding assistant_id column to ai_conversation')
     }
   } catch (error) {
     console.error('[AI DB Migration] Migration failed:', error)
@@ -108,6 +118,7 @@ export interface AIConversation {
   id: string
   sessionId: string
   title: string | null
+  assistantId: string
   createdAt: number
   updatedAt: number
 }
@@ -148,22 +159,23 @@ export interface AIMessage {
 /**
  * 创建新对话
  */
-export function createConversation(sessionId: string, title?: string): AIConversation {
+export function createConversation(sessionId: string, title?: string, assistantId?: string): AIConversation {
   const db = getAiDb()
   const now = Math.floor(Date.now() / 1000)
   const id = `conv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
   db.prepare(
     `
-    INSERT INTO ai_conversation (id, session_id, title, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO ai_conversation (id, session_id, title, assistant_id, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
   `
-  ).run(id, sessionId, title || null, now, now)
+  ).run(id, sessionId, title || null, assistantId || 'general', now, now)
 
   return {
     id,
     sessionId,
     title: title || null,
+    assistantId: assistantId || 'general',
     createdAt: now,
     updatedAt: now,
   }
@@ -197,7 +209,7 @@ export function getConversations(sessionId: string): AIConversation[] {
   const rows = db
     .prepare(
       `
-    SELECT id, session_id as sessionId, title, created_at as createdAt, updated_at as updatedAt
+    SELECT id, session_id as sessionId, title, assistant_id as assistantId, created_at as createdAt, updated_at as updatedAt
     FROM ai_conversation
     WHERE session_id = ?
     ORDER BY updated_at DESC
@@ -217,7 +229,7 @@ export function getConversation(conversationId: string): AIConversation | null {
   const row = db
     .prepare(
       `
-    SELECT id, session_id as sessionId, title, created_at as createdAt, updated_at as updatedAt
+    SELECT id, session_id as sessionId, title, assistant_id as assistantId, created_at as createdAt, updated_at as updatedAt
     FROM ai_conversation
     WHERE id = ?
   `

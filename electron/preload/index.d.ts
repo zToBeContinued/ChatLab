@@ -281,6 +281,7 @@ interface AIConversation {
   id: string
   sessionId: string
   title: string | null
+  assistantId: string
   createdAt: number
   updatedAt: number
 }
@@ -356,7 +357,7 @@ interface AiApi {
     senderId?: number,
     keywords?: string[]
   ) => Promise<{ messages: SearchMessageResult[]; hasMore: boolean }>
-  createConversation: (sessionId: string, title?: string) => Promise<AIConversation>
+  createConversation: (sessionId: string, title?: string, assistantId?: string) => Promise<AIConversation>
   getConversations: (sessionId: string) => Promise<AIConversation[]>
   getConversation: (conversationId: string) => Promise<AIConversation | null>
   updateConversationTitle: (conversationId: string, title: string) => Promise<boolean>
@@ -670,9 +671,55 @@ interface AgentApi {
     chatType?: 'group' | 'private',
     promptConfig?: PromptConfig,
     locale?: string,
-    maxHistoryRounds?: number
+    maxHistoryRounds?: number,
+    assistantId?: string
   ) => { requestId: string; promise: Promise<{ success: boolean; result?: AgentResult; error?: string }> }
   abort: (requestId: string) => Promise<{ success: boolean; error?: string }>
+}
+
+// ==================== 助手管理 ====================
+
+interface AssistantSummary {
+  id: string
+  name: string
+  description: string
+  presetQuestions: string[]
+  order?: number
+  builtinId?: string
+  isUserModified?: boolean
+  applicableChatTypes?: ('group' | 'private')[]
+  supportedLocales?: string[]
+}
+
+interface AssistantConfigFull {
+  id: string
+  name: string
+  description: string
+  systemPrompt: string
+  responseRules?: string
+  presetQuestions: string[]
+  allowedBuiltinTools?: string[]
+  customSkills?: unknown[]
+  version: number
+  builtinId?: string
+  isUserModified?: boolean
+  order?: number
+  applicableChatTypes?: ('group' | 'private')[]
+  supportedLocales?: string[]
+}
+
+interface AssistantApi {
+  getAll: () => Promise<AssistantSummary[]>
+  getConfig: (id: string) => Promise<AssistantConfigFull | null>
+  update: (id: string, updates: Partial<AssistantConfigFull>) => Promise<{ success: boolean; error?: string }>
+  create: (config: Omit<AssistantConfigFull, 'id' | 'version'>) => Promise<{ success: boolean; id?: string; error?: string }>
+  delete: (id: string) => Promise<{ success: boolean; error?: string }>
+  reset: (id: string) => Promise<{ success: boolean; error?: string }>
+  backupOldPresets: (data: {
+    customPresets?: unknown[]
+    builtinOverrides?: Record<string, unknown>
+    remotePresetIds?: string[]
+  }) => Promise<{ success: boolean; filePath?: string; error?: string }>
 }
 
 // Cache API 类型
@@ -867,6 +914,7 @@ declare global {
     llmApi: LlmApi
     embeddingApi: EmbeddingApi
     agentApi: AgentApi
+    assistantApi: AssistantApi
     cacheApi: CacheApi
     networkApi: NetworkApi
     sessionApi: SessionApi
@@ -884,6 +932,9 @@ export {
   EmbeddingServiceConfig,
   EmbeddingServiceConfigDisplay,
   AgentApi,
+  AssistantApi,
+  AssistantSummary,
+  AssistantConfigFull,
   CacheApi,
   NetworkApi,
   NlpApi,

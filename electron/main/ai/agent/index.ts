@@ -6,6 +6,7 @@
 import { getActiveConfig, buildPiModel } from '../llm'
 import { getAllTools } from '../tools'
 import type { ToolContext, OwnerInfo } from '../tools/types'
+import { createSkillTools } from '../assistant/skillRunner'
 import { getHistoryForAgent } from '../conversations'
 import { aiLogger, isDebugMode } from '../logger'
 import { t as i18nT } from '../../i18n'
@@ -17,6 +18,7 @@ import {
 } from '@mariozechner/pi-ai'
 
 import type { AgentConfig, AgentStreamChunk, AgentResult, PromptConfig, TokenUsage } from './types'
+import type { AssistantConfig } from '../assistant/types'
 import { buildSystemPrompt } from './prompt-builder'
 import { extractThinkingContent, stripToolCallTags } from './content-parser'
 import { AgentEventHandler } from './event-handler'
@@ -38,6 +40,7 @@ export class Agent {
   private abortSignal?: AbortSignal
   private chatType: 'group' | 'private' = 'group'
   private promptConfig?: PromptConfig
+  private assistantConfig?: AssistantConfig
   private locale: string = 'zh-CN'
 
   constructor(
@@ -47,7 +50,8 @@ export class Agent {
     config: AgentConfig = {},
     chatType: 'group' | 'private' = 'group',
     promptConfig?: PromptConfig,
-    locale: string = 'zh-CN'
+    locale: string = 'zh-CN',
+    assistantConfig?: AssistantConfig
   ) {
     this.context = context
     this.piModel = piModel
@@ -55,6 +59,7 @@ export class Agent {
     this.abortSignal = config.abortSignal
     this.chatType = chatType
     this.promptConfig = promptConfig
+    this.assistantConfig = assistantConfig
     this.locale = locale
     this.config = {
       maxToolRounds: config.maxToolRounds ?? 5,
@@ -74,7 +79,16 @@ export class Agent {
     aiLogger.info('Agent', 'User question', userMessage)
 
     const maxToolRounds = Math.max(0, this.config.maxToolRounds ?? 0)
-    const systemPrompt = buildSystemPrompt(this.chatType, this.promptConfig, this.context.ownerInfo, this.locale)
+
+    // 当有 AssistantConfig 时，将其 systemPrompt/responseRules 映射为 PromptConfig
+    const effectivePromptConfig: PromptConfig | undefined = this.assistantConfig
+      ? {
+          roleDefinition: this.assistantConfig.systemPrompt,
+          responseRules: this.assistantConfig.responseRules || '',
+        }
+      : this.promptConfig
+
+    const systemPrompt = buildSystemPrompt(this.chatType, effectivePromptConfig, this.context.ownerInfo, this.locale)
     const answerWithoutToolsPrompt = i18nT('ai.agent.answerWithoutTools', { lng: this.locale })
 
     const handler = new AgentEventHandler({
@@ -137,7 +151,16 @@ export class Agent {
 
     // 配置 prompt、工具、历史
     coreAgent.setSystemPrompt(systemPrompt)
-    const piTools = getAllTools({ ...this.context, locale: this.locale })
+    const allowedTools = this.assistantConfig?.allowedBuiltinTools
+    const toolContext = { ...this.context, locale: this.locale }
+    const piTools = getAllTools(toolContext, allowedTools)
+
+    // 合并声明式 SQL 技能（Phase 2）
+    if (this.assistantConfig?.customSkills?.length) {
+      const skillTools = createSkillTools(this.assistantConfig.customSkills, toolContext)
+      piTools.push(...skillTools)
+    }
+
     coreAgent.setTools(maxToolRounds > 0 ? piTools : [])
 
     const limit = this.config.contextHistoryLimit ?? 48
@@ -278,12 +301,15 @@ export async function runAgent(
   userMessage: string,
   context: ToolContext,
   config?: AgentConfig,
-  chatType?: 'group' | 'private'
+  chatType?: 'group' | 'private',
+  promptConfig?: PromptConfig,
+  locale?: string,
+  assistantConfig?: AssistantConfig
 ): Promise<AgentResult> {
   const activeConfig = getActiveConfig()
   if (!activeConfig) throw new Error('LLM service not configured')
   const piModel = buildPiModel(activeConfig)
-  const agent = new Agent(context, piModel, activeConfig.apiKey, config, chatType)
+  const agent = new Agent(context, piModel, activeConfig.apiKey, config, chatType, promptConfig, locale, assistantConfig)
   return agent.execute(userMessage)
 }
 
@@ -295,11 +321,14 @@ export async function runAgentStream(
   context: ToolContext,
   onChunk: (chunk: AgentStreamChunk) => void,
   config?: AgentConfig,
-  chatType?: 'group' | 'private'
+  chatType?: 'group' | 'private',
+  promptConfig?: PromptConfig,
+  locale?: string,
+  assistantConfig?: AssistantConfig
 ): Promise<AgentResult> {
   const activeConfig = getActiveConfig()
   if (!activeConfig) throw new Error('LLM service not configured')
   const piModel = buildPiModel(activeConfig)
-  const agent = new Agent(context, piModel, activeConfig.apiKey, config, chatType)
+  const agent = new Agent(context, piModel, activeConfig.apiKey, config, chatType, promptConfig, locale, assistantConfig)
   return agent.executeStream(userMessage, onChunk)
 }

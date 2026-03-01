@@ -8,7 +8,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 // 从拆分的模块导入 API
 import { extendedApi } from './apis/core'
 import { chatApi, mergeApi } from './apis/chat'
-import { aiApi, llmApi, agentApi, embeddingApi } from './apis/ai'
+import { aiApi, llmApi, agentApi, embeddingApi, assistantApi } from './apis/ai'
 import { nlpApi, networkApi, cacheApi, sessionApi } from './apis/utils'
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -24,6 +24,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('llmApi', llmApi)
     contextBridge.exposeInMainWorld('agentApi', agentApi)
     contextBridge.exposeInMainWorld('embeddingApi', embeddingApi)
+    contextBridge.exposeInMainWorld('assistantApi', assistantApi)
     contextBridge.exposeInMainWorld('cacheApi', cacheApi)
     contextBridge.exposeInMainWorld('networkApi', networkApi)
     contextBridge.exposeInMainWorld('sessionApi', sessionApi)
@@ -48,6 +49,8 @@ if (process.contextIsolated) {
   window.agentApi = agentApi
   // @ts-ignore (define in dts)
   window.embeddingApi = embeddingApi
+  // @ts-ignore (define in dts)
+  window.assistantApi = assistantApi
   // @ts-ignore (define in dts)
   window.cacheApi = cacheApi
   // @ts-ignore (define in dts)

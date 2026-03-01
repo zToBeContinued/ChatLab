@@ -9,11 +9,16 @@ import AIThinkingIndicator from './AIThinkingIndicator.vue'
 import ChatStatusBar from './ChatStatusBar.vue'
 import { useAIChat } from '@/composables/useAIChat'
 import CaptureButton from '@/components/common/CaptureButton.vue'
+import AssistantSelector from './AssistantSelector.vue'
+import AssistantConfigModal from './AssistantConfigModal.vue'
+import PresetQuestions from './PresetQuestions.vue'
 import { usePromptStore } from '@/stores/prompt'
 import { useSettingsStore } from '@/stores/settings'
+import { useAssistantStore } from '@/stores/assistant'
 
 const { t } = useI18n()
 const settingsStore = useSettingsStore()
+const assistantStore = useAssistantStore()
 
 // Props
 const props = defineProps<{
@@ -45,6 +50,16 @@ const {
 
 // Store
 const promptStore = usePromptStore()
+
+// 助手选择状态
+const showAssistantSelector = ref(true)
+const configModalVisible = ref(false)
+const configModalAssistantId = ref<string | null>(null)
+
+// 当前选中助手的预设问题
+const currentPresetQuestions = computed(() => {
+  return assistantStore.selectedAssistant?.presetQuestions ?? []
+})
 
 // 当前聊天类型
 const currentChatType = computed(() => props.chatType ?? 'group')
@@ -132,6 +147,35 @@ function generateWelcomeMessage() {
   return t('ai.chat.welcome.message', { sessionName: props.sessionName, configHint })
 }
 
+// 选择助手
+function handleSelectAssistant(id: string) {
+  assistantStore.selectAssistant(id)
+  showAssistantSelector.value = false
+  startNewConversation(generateWelcomeMessage())
+}
+
+// 打开助手配置弹窗
+function handleConfigureAssistant(id: string) {
+  configModalAssistantId.value = id
+  configModalVisible.value = true
+}
+
+// 返回助手选择
+function handleBackToSelector() {
+  assistantStore.clearSelection()
+  showAssistantSelector.value = true
+}
+
+// 助手配置保存后刷新列表
+async function handleAssistantConfigSaved() {
+  await assistantStore.loadAssistants()
+}
+
+// 发送消息（包括从预设问题点击发送）
+function handlePresetQuestion(question: string) {
+  handleSend(question)
+}
+
 // 发送消息
 async function handleSend(content: string) {
   await sendMessage(content)
@@ -194,10 +238,11 @@ async function handleLoadMore() {
   await loadMoreSourceMessages()
 }
 
-// 选择对话
+// 选择对话（切换到已有对话时恢复其绑定的助手）
 async function handleSelectConversation(convId: string) {
   await loadConversation(convId)
-  scrollToBottom(true) // 切换对话时强制滚动到底部
+  showAssistantSelector.value = false
+  scrollToBottom(true)
 }
 
 // 创建新对话
@@ -277,7 +322,7 @@ watch(
 
 <template>
   <div class="main-content flex h-full overflow-hidden">
-    <!-- 左侧：对话记录列表 -->
+    <!-- 左侧：对话记录列表（始终显示） -->
     <ConversationList
       ref="conversationListRef"
       :session-id="sessionId"
@@ -288,9 +333,35 @@ watch(
       @delete="handleDeleteConversation"
     />
 
-    <!-- 中间：对话区域 -->
-    <div class="flex h-full flex-1">
-      <div class="relative flex min-w-[480px] flex-1 flex-col overflow-hidden">
+    <!-- 右侧内容区 -->
+    <Transition name="fade" mode="out-in">
+      <!-- 助手选择页面 -->
+      <AssistantSelector
+        v-if="showAssistantSelector"
+        key="selector"
+        class="h-full flex-1"
+        :chat-type="currentChatType"
+        :locale="settingsStore.locale"
+        @select="handleSelectAssistant"
+        @configure="handleConfigureAssistant"
+      />
+
+      <!-- 对话区域 -->
+      <div v-else key="chat" class="flex h-full flex-1 overflow-hidden">
+        <div class="flex h-full flex-1">
+          <div class="relative flex min-w-[480px] flex-1 flex-col overflow-hidden">
+            <!-- 顶部：助手名称 + 返回按钮 -->
+            <div class="flex items-center gap-2 border-b border-gray-200 px-4 py-2 dark:border-gray-800">
+              <button
+                class="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="handleBackToSelector"
+              >
+                <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
+              </button>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ assistantStore.selectedAssistant?.name || '助手' }}
+              </span>
+            </div>
         <!-- 消息列表 -->
         <div ref="messagesContainer" class="min-h-0 flex-1 overflow-y-auto p-4">
           <div ref="conversationContentRef" class="mx-auto max-w-3xl space-y-4">
@@ -358,6 +429,16 @@ watch(
           </button>
         </Transition>
 
+        <!-- 预设问题气泡（仅在对话为空且无消息时显示） -->
+        <div v-if="messages.length <= 1 && !isAIThinking" class="px-4 pb-2">
+          <div class="mx-auto max-w-3xl">
+            <PresetQuestions
+              :questions="currentPresetQuestions"
+              @select="handlePresetQuestion"
+            />
+          </div>
+        </div>
+
         <!-- 输入框区域 -->
         <div class="px-4 pb-2">
           <div class="mx-auto max-w-3xl">
@@ -378,26 +459,36 @@ watch(
             />
           </div>
         </div>
-      </div>
-    </div>
+          </div> <!-- closes relative flex min-w-[480px] -->
+        </div> <!-- closes flex h-full flex-1 -->
 
-    <!-- 右侧：数据源面板 -->
-    <Transition name="slide-fade">
-      <div
-        v-if="sourceMessages.length > 0 && !isSourcePanelCollapsed"
-        class="w-80 shrink-0 border-l border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/50"
-      >
-        <DataSourcePanel
-          :messages="sourceMessages"
-          :keywords="currentKeywords"
-          :is-loading="isLoadingSource"
-          :is-collapsed="isSourcePanelCollapsed"
-          class="h-full"
-          @toggle="toggleSourcePanel"
-          @load-more="handleLoadMore"
-        />
+        <!-- 右侧：数据源面板 -->
+        <Transition name="slide-fade">
+          <div
+            v-if="sourceMessages.length > 0 && !isSourcePanelCollapsed"
+            class="w-80 shrink-0 border-l border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/50"
+          >
+            <DataSourcePanel
+              :messages="sourceMessages"
+              :keywords="currentKeywords"
+              :is-loading="isLoadingSource"
+              :is-collapsed="isSourcePanelCollapsed"
+              class="h-full"
+              @toggle="toggleSourcePanel"
+              @load-more="handleLoadMore"
+            />
+          </div>
+        </Transition>
       </div>
     </Transition>
+
+    <!-- 助手配置弹窗 -->
+    <AssistantConfigModal
+      :open="configModalVisible"
+      :assistant-id="configModalAssistantId"
+      @update:open="configModalVisible = $event"
+      @saved="handleAssistantConfigSaved"
+    />
   </div>
 </template>
 
