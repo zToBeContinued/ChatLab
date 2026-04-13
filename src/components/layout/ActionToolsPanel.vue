@@ -43,19 +43,35 @@ function handleToolClick(event: (typeof tools)[number]['event']) {
 }
 
 const tools = [
-  { event: 'openIncrementalImport' as const, icon: 'i-heroicons-plus-circle', hoverColor: 'group-hover:text-pink-500', labelKey: 'analysis.tooltip.incrementalImport' },
-  { event: 'openSessionIndex' as const, icon: 'i-heroicons-clock', hoverColor: 'group-hover:text-blue-500', labelKey: 'analysis.tooltip.sessionIndex' },
-  { event: 'openMemberManagement' as const, icon: 'i-heroicons-user-group', hoverColor: 'group-hover:text-purple-500', labelKey: 'analysis.tooltip.memberManagement' },
-  { event: 'openMessageExport' as const, icon: 'i-heroicons-document-arrow-down', hoverColor: 'group-hover:text-green-500', labelKey: 'analysis.messageExport.title' },
+  {
+    event: 'openIncrementalImport' as const,
+    icon: 'i-heroicons-plus-circle',
+    hoverColor: 'group-hover:text-pink-500',
+    labelKey: 'analysis.tooltip.incrementalImport',
+  },
+  {
+    event: 'openSessionIndex' as const,
+    icon: 'i-heroicons-clock',
+    hoverColor: 'group-hover:text-blue-500',
+    labelKey: 'analysis.tooltip.sessionIndex',
+  },
+  {
+    event: 'openMemberManagement' as const,
+    icon: 'i-heroicons-user-group',
+    hoverColor: 'group-hover:text-purple-500',
+    labelKey: 'analysis.tooltip.memberManagement',
+  },
+  {
+    event: 'openMessageExport' as const,
+    icon: 'i-heroicons-document-arrow-down',
+    hoverColor: 'group-hover:text-green-500',
+    labelKey: 'analysis.messageExport.title',
+  },
 ]
 </script>
 
 <template>
-  <div
-    class="fixed right-0 top-1/3 z-40"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
-  >
+  <div class="fixed right-0 top-1/3 z-40" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <!-- Trigger 标签（面板隐藏时可见，面板展开时淡出） -->
     <div
       class="h-10 w-6 cursor-pointer items-center justify-center rounded-l-lg border border-r-0 border-gray-200 bg-white text-gray-400 shadow-sm transition-opacity duration-200 hover:bg-gray-50 hover:text-gray-600 dark:border-white/10 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
@@ -82,9 +98,11 @@ const tools = [
           >
             <button
               class="flex h-5 w-5 items-center justify-center rounded transition-colors"
-              :class="isToolsPanelLocked
-                ? 'text-pink-500 hover:text-pink-600 dark:text-pink-400'
-                : 'text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400'"
+              :class="
+                isToolsPanelLocked
+                  ? 'text-pink-500 hover:text-pink-600 dark:text-pink-400'
+                  : 'text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400'
+              "
               @click="layoutStore.toggleToolsPanelLock()"
             >
               <UIcon

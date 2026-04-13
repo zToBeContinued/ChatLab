@@ -110,7 +110,9 @@ export const nlpApi = {
     return ipcRenderer.invoke('nlp:getPosTags')
   },
 
-  getDictList: (): Promise<Array<{ id: string; label: string; locale: string; downloaded: boolean; fileSize?: number }>> => {
+  getDictList: (): Promise<
+    Array<{ id: string; label: string; locale: string; downloaded: boolean; fileSize?: number }>
+  > => {
     return ipcRenderer.invoke('nlp:getDictList')
   },
 

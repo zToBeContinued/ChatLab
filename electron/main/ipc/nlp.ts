@@ -72,12 +72,9 @@ export function registerNlpHandlers(_ctx: IpcContext): void {
     return isDictDownloaded(dictId)
   })
 
-  ipcMain.handle(
-    'nlp:downloadDict',
-    async (_event, dictId: string): Promise<{ success: boolean; error?: string }> => {
-      return downloadDict(dictId)
-    }
-  )
+  ipcMain.handle('nlp:downloadDict', async (_event, dictId: string): Promise<{ success: boolean; error?: string }> => {
+    return downloadDict(dictId)
+  })
 
   ipcMain.handle('nlp:deleteDict', async (_event, dictId: string): Promise<{ success: boolean; error?: string }> => {
     return deleteDict(dictId)

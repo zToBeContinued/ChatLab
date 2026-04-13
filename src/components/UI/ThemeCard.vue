@@ -24,11 +24,9 @@ const props = withDefaults(
 )
 
 const variantClasses: Record<string, string> = {
-  section:
-    'rounded-xl border border-gray-200 bg-card-bg shadow-sm dark:border-white/5 dark:bg-card-dark',
+  section: 'rounded-xl border border-gray-200 bg-card-bg shadow-sm dark:border-white/5 dark:bg-card-dark',
   card: 'rounded-[20px] border border-gray-200/60 bg-card-bg shadow-sm transition-all hover:shadow-md dark:border-white/5 dark:bg-card-dark',
-  elevated:
-    'rounded-[24px] bg-card-bg shadow-xl ring-1 ring-gray-900/5 dark:bg-card-dark dark:ring-white/10',
+  elevated: 'rounded-[24px] bg-card-bg shadow-xl ring-1 ring-gray-900/5 dark:bg-card-dark dark:ring-white/10',
 }
 
 const containerClass = computed(() => {

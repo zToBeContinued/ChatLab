@@ -111,7 +111,10 @@ function getTypeCount(type: MessageType): number {
 const mediaItems = computed(() => [
   { label: t('views.message.profile.images'), count: getTypeCount(MessageType.IMAGE) },
   { label: t('views.message.profile.emoji'), count: getTypeCount(MessageType.EMOJI) },
-  { label: t('views.message.profile.voiceVideo'), count: getTypeCount(MessageType.VOICE) + getTypeCount(MessageType.VIDEO) },
+  {
+    label: t('views.message.profile.voiceVideo'),
+    count: getTypeCount(MessageType.VOICE) + getTypeCount(MessageType.VIDEO),
+  },
 ])
 
 // ==================== 巅峰记录 ====================
@@ -125,9 +128,7 @@ const peakDay = computed(() => {
 
 const topHours = computed(() => {
   if (props.hourlyActivity.length === 0) return []
-  return [...props.hourlyActivity]
-    .sort((a, b) => b.messageCount - a.messageCount)
-    .slice(0, 3)
+  return [...props.hourlyActivity].sort((a, b) => b.messageCount - a.messageCount).slice(0, 3)
 })
 
 // ==================== 文字表达力 ====================
@@ -191,28 +192,25 @@ const metricItems = computed<MetricItem[]>(() => [
     icon: 'i-heroicons-photo',
     label: t('views.message.profile.mediaRichness'),
     value: `${mediaRatio.value}%`,
-    subtext: mediaItems.value
-      .filter((m) => m.count > 0)
-      .map((m) => `${m.label} ${m.count}`)
-      .join(' · ') || '-',
+    subtext:
+      mediaItems.value
+        .filter((m) => m.count > 0)
+        .map((m) => `${m.label} ${m.count}`)
+        .join(' · ') || '-',
     colorClass: 'text-pink-600 dark:text-pink-400',
   },
   {
     icon: 'i-heroicons-fire',
     label: t('views.message.profile.peakRecord'),
     value: peakDay.value ? dayjs(peakDay.value.date).format('MM/DD') : '-',
-    subtext: peakDay.value
-      ? t('views.message.profile.peakRecordDesc', { count: peakDay.value.messageCount })
-      : '',
+    subtext: peakDay.value ? t('views.message.profile.peakRecordDesc', { count: peakDay.value.messageCount }) : '',
     colorClass: 'text-red-600 dark:text-red-400',
   },
   {
     icon: 'i-heroicons-clock',
     label: t('views.message.profile.topHours'),
     value: topHours.value.length > 0 ? `${topHours.value[0].hour}:00` : '-',
-    subtext: topHours.value.length >= 2
-      ? topHours.value.map((h) => `${h.hour}:00`).join(' > ')
-      : '',
+    subtext: topHours.value.length >= 2 ? topHours.value.map((h) => `${h.hour}:00`).join(' > ') : '',
     colorClass: 'text-cyan-600 dark:text-cyan-400',
   },
 ])
@@ -223,8 +221,16 @@ const donutRef = ref<HTMLElement | null>(null)
 let donutInstance: echarts.ECharts | null = null
 
 const typeColors = [
-  '#6366f1', '#ec4899', '#f97316', '#22c55e', '#06b6d4',
-  '#8b5cf6', '#f43f5e', '#eab308', '#14b8a6', '#3b82f6',
+  '#6366f1',
+  '#ec4899',
+  '#f97316',
+  '#22c55e',
+  '#06b6d4',
+  '#8b5cf6',
+  '#f43f5e',
+  '#eab308',
+  '#14b8a6',
+  '#3b82f6',
 ]
 
 const donutData = computed(() => {
@@ -331,12 +337,18 @@ function handleResize() {
   barInstance?.resize()
 }
 
-watch(() => props.messageTypes, () => {
-  updateDonut()
-  updateBar()
-})
+watch(
+  () => props.messageTypes,
+  () => {
+    updateDonut()
+    updateBar()
+  }
+)
 
-watch(() => props.hourlyActivity, () => updateBar())
+watch(
+  () => props.hourlyActivity,
+  () => updateBar()
+)
 
 watch(isDark, () => {
   donutInstance?.dispose()
@@ -392,9 +404,7 @@ onUnmounted(() => {
               <span class="text-base font-medium text-gray-600 dark:text-gray-300">
                 {{ t('views.message.profile.heroLine2Middle') }}
               </span>
-              <span class="font-bold text-xl text-gray-900 dark:text-white">
-                {{ mediaRatio }}%
-              </span>
+              <span class="font-bold text-xl text-gray-900 dark:text-white">{{ mediaRatio }}%</span>
               <span class="text-base font-medium text-gray-600 dark:text-gray-300">
                 {{ t('views.message.profile.heroLine2Suffix') }}
               </span>
@@ -408,13 +418,13 @@ onUnmounted(() => {
             <div class="mb-1 text-[10px] font-bold text-gray-500 dark:text-gray-400">
               {{ t('views.message.profile.typeDistribution') }}
             </div>
-            <div ref="donutRef" style="width: 110px; height: 110px;" />
+            <div ref="donutRef" style="width: 110px; height: 110px" />
           </div>
           <div class="flex flex-col items-center">
             <div class="mb-1 text-[10px] font-bold text-gray-500 dark:text-gray-400">
               {{ t('views.message.profile.hourlyDistribution') }}
             </div>
-            <div ref="barRef" style="width: 180px; height: 100px;" />
+            <div ref="barRef" style="width: 180px; height: 100px" />
           </div>
         </div>
       </div>

@@ -300,448 +300,448 @@ function formatDuration(seconds: number): string {
       <!-- 无会话索引 -->
       <EmptyState
         v-if="stats && !stats.hasSessionIndex"
-      icon="i-heroicons-clock"
-      :title="t('views.relationship.noIndex.title')"
-      :description="t('views.relationship.noIndex.description')"
-    />
+        icon="i-heroicons-clock"
+        :title="t('views.relationship.noIndex.title')"
+        :description="t('views.relationship.noIndex.description')"
+      />
 
-    <!-- 无数据 -->
-    <EmptyState
-      v-else-if="stats && !hasData"
-      icon="i-heroicons-heart"
-      :title="t('views.relationship.empty.title')"
-      :description="t('views.relationship.empty.description')"
-    />
+      <!-- 无数据 -->
+      <EmptyState
+        v-else-if="stats && !hasData"
+        icon="i-heroicons-heart"
+        :title="t('views.relationship.empty.title')"
+        :description="t('views.relationship.empty.description')"
+      />
 
-    <!-- 有数据 -->
-    <template v-else-if="stats && hasData">
-      <div class="space-y-6">
-        <!-- 关系大满贯 (Single Page Shareable Poster) -->
-        <ThemeCard id="shareable-poster" variant="elevated" decorative class="flex flex-col">
-          <!-- 1. 主视觉区域 (Primary Module) -->
-          <div
-            class="relative z-10 flex flex-col items-center justify-center gap-10 px-6 pt-10 pb-6 sm:px-8 lg:flex-row lg:gap-16 xl:gap-24"
-          >
-            <!-- 左侧：文字描述与基础数据 -->
-            <div class="flex shrink-0 flex-col items-center justify-center">
-              <div class="flex w-fit flex-col items-start text-left">
-                <div class="flex flex-col text-[15px] leading-relaxed text-gray-600 dark:text-gray-300">
-                  <p class="mb-2 text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">
-                    {{ timeRangeString }}
-                  </p>
-
-                  <div class="mb-4 flex items-baseline gap-2">
-                    <span class="text-xl font-medium text-gray-700 dark:text-gray-300">
-                      {{ t('views.relationship.hero.totalSessionsPrefix') }}
-                    </span>
-                    <span class="font-black text-5xl tracking-tight text-gray-900 dark:text-white">
-                      {{ stats.totalSessions }}
-                    </span>
-                    <span class="text-xl font-medium text-gray-700 dark:text-gray-300">
-                      {{ t('views.relationship.hero.totalSessionsSuffix') }}
-                    </span>
-                  </div>
-
-                  <div class="flex items-baseline flex-wrap gap-x-1.5 gap-y-1">
-                    <span class="text-base font-medium text-gray-600 dark:text-gray-300">
-                      {{ t('views.relationship.hero.initiativePrefix') }}
-                    </span>
-                    <span class="font-black text-3xl text-pink-500 dark:text-pink-400">
-                      {{ overallInitiateRatio >= 50 ? overallInitiateRatio : 100 - overallInitiateRatio }}%
-                    </span>
-                    <span class="text-base font-medium text-gray-600 dark:text-gray-300">
-                      {{ t('views.relationship.hero.initiativeByPrefix') }}
-                    </span>
-                    <span class="font-bold text-xl text-gray-900 dark:text-white">
-                      {{ overallInitiateRatio >= 50 ? memberA?.name : memberB?.name }}
-                    </span>
-                    <span class="text-base font-medium text-gray-600 dark:text-gray-300">
-                      {{ t('views.relationship.hero.initiativeBySuffix') }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- VS Stats -->
-                <div class="mt-8 flex w-full max-w-[320px] items-center justify-between gap-4">
-                  <div class="flex flex-1 flex-col items-center overflow-hidden">
-                    <div
-                      class="w-full truncate text-center text-xs font-bold text-gray-500 dark:text-gray-400"
-                      :title="memberA?.name"
-                    >
-                      {{ memberA?.name }}
-                    </div>
-                    <div class="mt-1 text-2xl font-black text-blue-500 dark:text-blue-400">
-                      {{ memberA?.totalInitiateCount }}
-                    </div>
-                    <div class="mt-0.5 text-[10px] font-medium text-gray-400">
-                      {{ t('views.relationship.hero.initiateTimes') }}
-                    </div>
-                  </div>
-
-                  <div
-                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 font-black text-[10px] italic text-gray-400 shadow-inner dark:bg-gray-900/80 dark:text-gray-500"
-                  >
-                    VS
-                  </div>
-
-                  <div class="flex flex-1 flex-col items-center overflow-hidden">
-                    <div
-                      class="w-full truncate text-center text-xs font-bold text-gray-500 dark:text-gray-400"
-                      :title="memberB?.name"
-                    >
-                      {{ memberB?.name }}
-                    </div>
-                    <div class="mt-1 text-2xl font-black text-pink-500 dark:text-pink-400">
-                      {{ memberB?.totalInitiateCount }}
-                    </div>
-                    <div class="mt-0.5 text-[10px] font-medium text-gray-400">
-                      {{ t('views.relationship.hero.initiateTimes') }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 右侧：主动性趋势图 -->
-            <div v-if="stats.months.length >= 2" class="flex w-full max-w-[400px] shrink-0 flex-col justify-center">
-              <div class="mb-2 flex items-center justify-between px-1">
-                <span class="text-sm font-bold text-gray-900 dark:text-white">
-                  {{ t('views.relationship.trend.title') }}
-                </span>
-                <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                  {{ t('views.relationship.trend.hint', { name: memberA?.name ?? '' }) }}
-                </span>
-              </div>
-              <div class="w-full">
-                <div class="h-[200px] w-full">
-                  <EChart :option="trendChartOption" :height="200" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. 四个次要模块 (4 Secondary Modules) -->
-          <div class="relative z-10 grid grid-cols-2 gap-3 p-4 pt-2 sm:p-6 sm:pt-2 lg:grid-cols-4">
-            <RelationshipMetricCard
-              :title="t('views.relationship.closerTitle')"
-              icon-name="i-heroicons-hand-raised-solid"
-              icon-bg-class="bg-blue-100 dark:bg-blue-500/20"
-              icon-color-class="text-blue-600 dark:text-blue-400"
-              :left-name="memberA?.name"
-              :left-value="memberA?.totalCloseCount ?? 0"
-              :right-name="memberB?.name"
-              :right-value="memberB?.totalCloseCount ?? 0"
-              value-class="text-lg text-blue-600 dark:text-blue-400"
-              :description="t('views.relationship.closerHint')"
-            />
-
-            <RelationshipMetricCard
-              :title="t('views.relationship.iceBreaker.title')"
-              icon-name="i-heroicons-fire-solid"
-              icon-bg-class="bg-pink-100 dark:bg-pink-500/20"
-              icon-color-class="text-pink-600 dark:text-pink-400"
-              :left-name="memberA?.name"
-              :left-value="getIceBreakCount(memberA?.memberId)"
-              :right-name="memberB?.name"
-              :right-value="getIceBreakCount(memberB?.memberId)"
-              value-class="text-lg text-pink-600 dark:text-pink-400"
-              :description="t('views.relationship.iceBreaker.hint')"
-            />
-
-            <RelationshipMetricCard
-              :title="t('views.relationship.responseLatency.title')"
-              icon-name="i-heroicons-clock-solid"
-              icon-bg-class="bg-amber-100 dark:bg-amber-500/20"
-              icon-color-class="text-amber-600 dark:text-amber-400"
-              :left-name="memberA?.name"
-              :left-value="formatResponseByMember(memberA?.memberId)"
-              :right-name="memberB?.name"
-              :right-value="formatResponseByMember(memberB?.memberId)"
-              value-class="text-sm text-amber-600 dark:text-amber-400"
-              :description="t('views.relationship.responseLatency.hint')"
-            />
-
-            <RelationshipMetricCard
-              :title="t('views.relationship.perseverance.title')"
-              icon-name="i-heroicons-arrow-path-solid"
-              icon-bg-class="bg-purple-100 dark:bg-purple-500/20"
-              icon-color-class="text-purple-600 dark:text-purple-400"
-              :left-name="memberA?.name"
-              :left-value="getPerseveranceCount(memberA?.memberId)"
-              :right-name="memberB?.name"
-              :right-value="getPerseveranceCount(memberB?.memberId)"
-              value-class="text-lg text-purple-600 dark:text-purple-400"
-              :description="perseveranceHintText"
+      <!-- 有数据 -->
+      <template v-else-if="stats && hasData">
+        <div class="space-y-6">
+          <!-- 关系大满贯 (Single Page Shareable Poster) -->
+          <ThemeCard id="shareable-poster" variant="elevated" decorative class="flex flex-col">
+            <!-- 1. 主视觉区域 (Primary Module) -->
+            <div
+              class="relative z-10 flex flex-col items-center justify-center gap-10 px-6 pt-10 pb-6 sm:px-8 lg:flex-row lg:gap-16 xl:gap-24"
             >
-              <template #header-extra>
-                <USelect
-                  v-model="perseveranceThresholdModel"
-                  :items="thresholdOptions"
-                  value-key="value"
-                  size="xs"
-                  class="relative z-[120] w-16"
-                  :ui="{ content: 'z-[121]' }"
-                  :disabled="isPerseveranceLoading"
-                />
-              </template>
-            </RelationshipMetricCard>
-          </div>
+              <!-- 左侧：文字描述与基础数据 -->
+              <div class="flex shrink-0 flex-col items-center justify-center">
+                <div class="flex w-fit flex-col items-start text-left">
+                  <div class="flex flex-col text-[15px] leading-relaxed text-gray-600 dark:text-gray-300">
+                    <p class="mb-2 text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">
+                      {{ timeRangeString }}
+                    </p>
 
-          <!-- Share Footer / Watermark -->
-          <div
-            class="relative z-10 flex items-center justify-between px-6 pb-4 opacity-40 mix-blend-luminosity dark:opacity-30 sm:px-8 sm:pb-5"
-          >
-            <div class="flex items-center gap-1.5">
-              <UIcon name="i-heroicons-chat-bubble-left-right-solid" class="h-3.5 w-3.5" />
-              <span class="text-[10px] font-bold uppercase tracking-wider">ChatLab</span>
-            </div>
-            <span class="text-[9px] font-medium uppercase tracking-widest">
-              {{ t('views.relationship.watermarkReport') }}
-            </span>
-          </div>
-        </ThemeCard>
-      </div>
+                    <div class="mb-4 flex items-baseline gap-2">
+                      <span class="text-xl font-medium text-gray-700 dark:text-gray-300">
+                        {{ t('views.relationship.hero.totalSessionsPrefix') }}
+                      </span>
+                      <span class="font-black text-5xl tracking-tight text-gray-900 dark:text-white">
+                        {{ stats.totalSessions }}
+                      </span>
+                      <span class="text-xl font-medium text-gray-700 dark:text-gray-300">
+                        {{ t('views.relationship.hero.totalSessionsSuffix') }}
+                      </span>
+                    </div>
 
-      <!-- 月度时间线 -->
-      <SectionCard :title="t('views.relationship.monthly.title')" :show-divider="false">
-        <div class="p-6 sm:p-8">
-          <div class="relative ml-4 border-l-2 border-gray-100/80 py-4 dark:border-gray-800/80">
-            <div v-for="(month, idx) in stats.months" :key="month.month" class="relative pb-12 pl-10 last:pb-0">
-              <!-- Timeline Dot -->
-              <div
-                class="absolute -left-[11px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white ring-4 ring-white dark:bg-gray-900 dark:ring-gray-900"
-              >
-                <div
-                  class="h-2.5 w-2.5 rounded-full shadow-sm"
-                  :class="
-                    month.totalSessions > 0
-                      ? idx === 0
-                        ? 'bg-pink-500 animate-pulse'
-                        : 'bg-pink-400'
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  "
-                />
+                    <div class="flex items-baseline flex-wrap gap-x-1.5 gap-y-1">
+                      <span class="text-base font-medium text-gray-600 dark:text-gray-300">
+                        {{ t('views.relationship.hero.initiativePrefix') }}
+                      </span>
+                      <span class="font-black text-3xl text-pink-500 dark:text-pink-400">
+                        {{ overallInitiateRatio >= 50 ? overallInitiateRatio : 100 - overallInitiateRatio }}%
+                      </span>
+                      <span class="text-base font-medium text-gray-600 dark:text-gray-300">
+                        {{ t('views.relationship.hero.initiativeByPrefix') }}
+                      </span>
+                      <span class="font-bold text-xl text-gray-900 dark:text-white">
+                        {{ overallInitiateRatio >= 50 ? memberA?.name : memberB?.name }}
+                      </span>
+                      <span class="text-base font-medium text-gray-600 dark:text-gray-300">
+                        {{ t('views.relationship.hero.initiativeBySuffix') }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- VS Stats -->
+                  <div class="mt-8 flex w-full max-w-[320px] items-center justify-between gap-4">
+                    <div class="flex flex-1 flex-col items-center overflow-hidden">
+                      <div
+                        class="w-full truncate text-center text-xs font-bold text-gray-500 dark:text-gray-400"
+                        :title="memberA?.name"
+                      >
+                        {{ memberA?.name }}
+                      </div>
+                      <div class="mt-1 text-2xl font-black text-blue-500 dark:text-blue-400">
+                        {{ memberA?.totalInitiateCount }}
+                      </div>
+                      <div class="mt-0.5 text-[10px] font-medium text-gray-400">
+                        {{ t('views.relationship.hero.initiateTimes') }}
+                      </div>
+                    </div>
+
+                    <div
+                      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 font-black text-[10px] italic text-gray-400 shadow-inner dark:bg-gray-900/80 dark:text-gray-500"
+                    >
+                      VS
+                    </div>
+
+                    <div class="flex flex-1 flex-col items-center overflow-hidden">
+                      <div
+                        class="w-full truncate text-center text-xs font-bold text-gray-500 dark:text-gray-400"
+                        :title="memberB?.name"
+                      >
+                        {{ memberB?.name }}
+                      </div>
+                      <div class="mt-1 text-2xl font-black text-pink-500 dark:text-pink-400">
+                        {{ memberB?.totalInitiateCount }}
+                      </div>
+                      <div class="mt-0.5 text-[10px] font-medium text-gray-400">
+                        {{ t('views.relationship.hero.initiateTimes') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Month Content Card -->
-              <div
-                class="group relative overflow-hidden rounded-[20px] bg-card-bg shadow-sm ring-1 ring-gray-900/5 transition-all hover:-translate-y-0.5 hover:shadow-md dark:bg-card-dark dark:ring-white/10"
+              <!-- 右侧：主动性趋势图 -->
+              <div v-if="stats.months.length >= 2" class="flex w-full max-w-[400px] shrink-0 flex-col justify-center">
+                <div class="mb-2 flex items-center justify-between px-1">
+                  <span class="text-sm font-bold text-gray-900 dark:text-white">
+                    {{ t('views.relationship.trend.title') }}
+                  </span>
+                  <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                    {{ t('views.relationship.trend.hint', { name: memberA?.name ?? '' }) }}
+                  </span>
+                </div>
+                <div class="w-full">
+                  <div class="h-[200px] w-full">
+                    <EChart :option="trendChartOption" :height="200" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 四个次要模块 (4 Secondary Modules) -->
+            <div class="relative z-10 grid grid-cols-2 gap-3 p-4 pt-2 sm:p-6 sm:pt-2 lg:grid-cols-4">
+              <RelationshipMetricCard
+                :title="t('views.relationship.closerTitle')"
+                icon-name="i-heroicons-hand-raised-solid"
+                icon-bg-class="bg-blue-100 dark:bg-blue-500/20"
+                icon-color-class="text-blue-600 dark:text-blue-400"
+                :left-name="memberA?.name"
+                :left-value="memberA?.totalCloseCount ?? 0"
+                :right-name="memberB?.name"
+                :right-value="memberB?.totalCloseCount ?? 0"
+                value-class="text-lg text-blue-600 dark:text-blue-400"
+                :description="t('views.relationship.closerHint')"
+              />
+
+              <RelationshipMetricCard
+                :title="t('views.relationship.iceBreaker.title')"
+                icon-name="i-heroicons-fire-solid"
+                icon-bg-class="bg-pink-100 dark:bg-pink-500/20"
+                icon-color-class="text-pink-600 dark:text-pink-400"
+                :left-name="memberA?.name"
+                :left-value="getIceBreakCount(memberA?.memberId)"
+                :right-name="memberB?.name"
+                :right-value="getIceBreakCount(memberB?.memberId)"
+                value-class="text-lg text-pink-600 dark:text-pink-400"
+                :description="t('views.relationship.iceBreaker.hint')"
+              />
+
+              <RelationshipMetricCard
+                :title="t('views.relationship.responseLatency.title')"
+                icon-name="i-heroicons-clock-solid"
+                icon-bg-class="bg-amber-100 dark:bg-amber-500/20"
+                icon-color-class="text-amber-600 dark:text-amber-400"
+                :left-name="memberA?.name"
+                :left-value="formatResponseByMember(memberA?.memberId)"
+                :right-name="memberB?.name"
+                :right-value="formatResponseByMember(memberB?.memberId)"
+                value-class="text-sm text-amber-600 dark:text-amber-400"
+                :description="t('views.relationship.responseLatency.hint')"
+              />
+
+              <RelationshipMetricCard
+                :title="t('views.relationship.perseverance.title')"
+                icon-name="i-heroicons-arrow-path-solid"
+                icon-bg-class="bg-purple-100 dark:bg-purple-500/20"
+                icon-color-class="text-purple-600 dark:text-purple-400"
+                :left-name="memberA?.name"
+                :left-value="getPerseveranceCount(memberA?.memberId)"
+                :right-name="memberB?.name"
+                :right-value="getPerseveranceCount(memberB?.memberId)"
+                value-class="text-lg text-purple-600 dark:text-purple-400"
+                :description="perseveranceHintText"
               >
-                <!-- 装饰背景 -->
+                <template #header-extra>
+                  <USelect
+                    v-model="perseveranceThresholdModel"
+                    :items="thresholdOptions"
+                    value-key="value"
+                    size="xs"
+                    class="relative z-[120] w-16"
+                    :ui="{ content: 'z-[121]' }"
+                    :disabled="isPerseveranceLoading"
+                  />
+                </template>
+              </RelationshipMetricCard>
+            </div>
+
+            <!-- Share Footer / Watermark -->
+            <div
+              class="relative z-10 flex items-center justify-between px-6 pb-4 opacity-40 mix-blend-luminosity dark:opacity-30 sm:px-8 sm:pb-5"
+            >
+              <div class="flex items-center gap-1.5">
+                <UIcon name="i-heroicons-chat-bubble-left-right-solid" class="h-3.5 w-3.5" />
+                <span class="text-[10px] font-bold uppercase tracking-wider">ChatLab</span>
+              </div>
+              <span class="text-[9px] font-medium uppercase tracking-widest">
+                {{ t('views.relationship.watermarkReport') }}
+              </span>
+            </div>
+          </ThemeCard>
+        </div>
+
+        <!-- 月度时间线 -->
+        <SectionCard :title="t('views.relationship.monthly.title')" :show-divider="false">
+          <div class="p-6 sm:p-8">
+            <div class="relative ml-4 border-l-2 border-gray-100/80 py-4 dark:border-gray-800/80">
+              <div v-for="(month, idx) in stats.months" :key="month.month" class="relative pb-12 pl-10 last:pb-0">
+                <!-- Timeline Dot -->
                 <div
-                  v-if="month.totalSessions > 0"
-                  class="pointer-events-none absolute inset-0 overflow-hidden opacity-30 transition-opacity group-hover:opacity-50"
+                  class="absolute -left-[11px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white ring-4 ring-white dark:bg-gray-900 dark:ring-gray-900"
                 >
                   <div
-                    class="absolute -left-[10%] top-[20%] h-[60%] w-[40%] rounded-full bg-blue-400/10 blur-[40px] dark:bg-blue-500/20"
-                  />
-                  <div
-                    class="absolute -right-[10%] bottom-[20%] h-[60%] w-[40%] rounded-full bg-pink-400/10 blur-[40px] dark:bg-pink-500/20"
+                    class="h-2.5 w-2.5 rounded-full shadow-sm"
+                    :class="
+                      month.totalSessions > 0
+                        ? idx === 0
+                          ? 'bg-pink-500 animate-pulse'
+                          : 'bg-pink-400'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    "
                   />
                 </div>
 
-                <div class="relative z-10 p-4 sm:p-5">
-                  <!-- 头部：月份与总次数 -->
-                  <div class="flex items-center justify-between" :class="month.totalSessions > 0 ? 'mb-4' : ''">
-                    <div class="flex items-center gap-3">
-                      <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        {{ formatMonth(month.month) }}
-                      </span>
-                      <span
-                        class="rounded-lg px-2.5 py-1 text-xs font-semibold"
-                        :class="
-                          month.totalSessions === 0
-                            ? 'bg-gray-50 text-gray-500 dark:bg-gray-800/50 dark:text-gray-400'
-                            : 'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400'
-                        "
-                      >
-                        {{ getMonthLabel(month) }}
-                      </span>
-                    </div>
-
-                    <div v-if="month.totalSessions > 0" class="flex items-baseline gap-1.5">
-                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        {{ t('views.relationship.monthly.totalSessionsPrefix') }}
-                      </span>
-                      <span class="text-2xl font-black leading-none text-gray-900 dark:text-white">
-                        {{ month.totalSessions }}
-                      </span>
-                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        {{ t('views.relationship.monthly.totalSessionsSuffix') }}
-                      </span>
-                    </div>
+                <!-- Month Content Card -->
+                <div
+                  class="group relative overflow-hidden rounded-[20px] bg-card-bg shadow-sm ring-1 ring-gray-900/5 transition-all hover:-translate-y-0.5 hover:shadow-md dark:bg-card-dark dark:ring-white/10"
+                >
+                  <!-- 装饰背景 -->
+                  <div
+                    v-if="month.totalSessions > 0"
+                    class="pointer-events-none absolute inset-0 overflow-hidden opacity-30 transition-opacity group-hover:opacity-50"
+                  >
+                    <div
+                      class="absolute -left-[10%] top-[20%] h-[60%] w-[40%] rounded-full bg-blue-400/10 blur-[40px] dark:bg-blue-500/20"
+                    />
+                    <div
+                      class="absolute -right-[10%] bottom-[20%] h-[60%] w-[40%] rounded-full bg-pink-400/10 blur-[40px] dark:bg-pink-500/20"
+                    />
                   </div>
 
-                  <template v-if="month.totalSessions > 0">
-                    <!-- 内容区：四列高度压缩卡片网格 -->
-                    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                      <!-- 1. 发起者 -->
-                      <div
-                        class="flex flex-col rounded-xl bg-blue-50/50 p-3 ring-1 ring-blue-100/50 dark:bg-blue-500/5 dark:ring-blue-500/10"
-                      >
-                        <div class="mb-2.5 flex items-center gap-1.5">
-                          <UIcon
-                            name="i-heroicons-chat-bubble-bottom-center-text-solid"
-                            class="h-3.5 w-3.5 text-blue-500 dark:text-blue-400"
-                          />
-                          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            {{ t('views.relationship.initiator') }}
-                          </span>
-                        </div>
-                        <div class="flex flex-col gap-1.5">
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberA?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-blue-600 dark:text-blue-400">
-                              {{ month.members.find((m) => m.memberId === memberA?.memberId)?.initiateCount ?? 0 }}
-                            </span>
-                          </div>
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberB?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-pink-500 dark:text-pink-400">
-                              {{ month.members.find((m) => m.memberId === memberB?.memberId)?.initiateCount ?? 0 }}
-                            </span>
-                          </div>
-                        </div>
-                        <div class="mt-3 flex h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                          <div
-                            class="bg-blue-500 dark:bg-blue-400"
-                            :style="{ width: clampBarWidth(getMonthInitiateRatio(month)) + '%' }"
-                          />
-                          <div
-                            class="bg-pink-500 dark:bg-pink-400"
-                            :style="{ width: clampBarWidth(100 - getMonthInitiateRatio(month)) + '%' }"
-                          />
-                        </div>
+                  <div class="relative z-10 p-4 sm:p-5">
+                    <!-- 头部：月份与总次数 -->
+                    <div class="flex items-center justify-between" :class="month.totalSessions > 0 ? 'mb-4' : ''">
+                      <div class="flex items-center gap-3">
+                        <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                          {{ formatMonth(month.month) }}
+                        </span>
+                        <span
+                          class="rounded-lg px-2.5 py-1 text-xs font-semibold"
+                          :class="
+                            month.totalSessions === 0
+                              ? 'bg-gray-50 text-gray-500 dark:bg-gray-800/50 dark:text-gray-400'
+                              : 'bg-pink-50 text-pink-600 dark:bg-pink-500/10 dark:text-pink-400'
+                          "
+                        >
+                          {{ getMonthLabel(month) }}
+                        </span>
                       </div>
 
-                      <!-- 2. 终结者 -->
-                      <div
-                        class="flex flex-col rounded-xl bg-indigo-50/50 p-3 ring-1 ring-indigo-100/50 dark:bg-indigo-500/5 dark:ring-indigo-500/10"
-                      >
-                        <div class="mb-2.5 flex items-center gap-1.5">
-                          <UIcon
-                            name="i-heroicons-hand-raised-solid"
-                            class="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400"
-                          />
-                          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            {{ t('views.relationship.closer') }}
-                          </span>
-                        </div>
-                        <div class="flex flex-col gap-1.5">
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberA?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-indigo-600 dark:text-indigo-400">
-                              {{ month.members.find((m) => m.memberId === memberA?.memberId)?.closeCount ?? 0 }}
-                            </span>
-                          </div>
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberB?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-pink-500 dark:text-pink-400">
-                              {{ month.members.find((m) => m.memberId === memberB?.memberId)?.closeCount ?? 0 }}
-                            </span>
-                          </div>
-                        </div>
-                        <div class="mt-3 flex h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                          <div
-                            class="bg-indigo-500 dark:bg-indigo-400"
-                            :style="{ width: clampBarWidth(getMonthCloseRatio(month)) + '%' }"
-                          />
-                          <div
-                            class="bg-pink-500 dark:bg-pink-400"
-                            :style="{ width: clampBarWidth(100 - getMonthCloseRatio(month)) + '%' }"
-                          />
-                        </div>
-                      </div>
-
-                      <!-- 3. 响应时延 -->
-                      <div
-                        class="flex flex-col rounded-xl bg-amber-50/50 p-3 ring-1 ring-amber-100/50 dark:bg-amber-500/5 dark:ring-amber-500/10"
-                      >
-                        <div class="mb-2.5 flex items-center gap-1.5">
-                          <UIcon
-                            name="i-heroicons-clock-solid"
-                            class="h-3.5 w-3.5 text-amber-500 dark:text-amber-400"
-                          />
-                          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            {{ t('views.relationship.responseLatency.title') }}
-                          </span>
-                        </div>
-                        <div class="flex flex-col gap-1.5">
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberA?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-amber-600 dark:text-amber-500">
-                              {{ getMemberResponseLatencyText(month.month, memberA?.memberId) }}
-                            </span>
-                          </div>
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberB?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-amber-600 dark:text-amber-500">
-                              {{ getMemberResponseLatencyText(month.month, memberB?.memberId) }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 4. 锲而不舍 -->
-                      <div
-                        class="flex flex-col rounded-xl bg-purple-50/50 p-3 ring-1 ring-purple-100/50 dark:bg-purple-500/5 dark:ring-purple-500/10"
-                      >
-                        <div class="mb-2.5 flex items-center gap-1.5">
-                          <UIcon
-                            name="i-heroicons-arrow-path-solid"
-                            class="h-3.5 w-3.5 text-purple-500 dark:text-purple-400"
-                          />
-                          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            {{ t('views.relationship.perseverance.title') }}
-                          </span>
-                        </div>
-                        <div class="flex flex-col gap-1.5">
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberA?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-purple-600 dark:text-purple-400">
-                              {{ getMemberPerseveranceText(month.month, memberA?.memberId) }}
-                            </span>
-                          </div>
-                          <div class="flex items-center justify-between text-xs">
-                            <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
-                              {{ memberB?.name }}
-                            </span>
-                            <span class="font-black tabular-nums text-purple-600 dark:text-purple-400">
-                              {{ getMemberPerseveranceText(month.month, memberB?.memberId) }}
-                            </span>
-                          </div>
-                        </div>
+                      <div v-if="month.totalSessions > 0" class="flex items-baseline gap-1.5">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          {{ t('views.relationship.monthly.totalSessionsPrefix') }}
+                        </span>
+                        <span class="text-2xl font-black leading-none text-gray-900 dark:text-white">
+                          {{ month.totalSessions }}
+                        </span>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          {{ t('views.relationship.monthly.totalSessionsSuffix') }}
+                        </span>
                       </div>
                     </div>
-                  </template>
 
-                  <div
-                    v-else
-                    class="flex h-24 items-center justify-center text-sm font-medium text-gray-400 dark:text-gray-500"
-                  >
-                    {{ t('views.relationship.noActivity') }}
+                    <template v-if="month.totalSessions > 0">
+                      <!-- 内容区：四列高度压缩卡片网格 -->
+                      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        <!-- 1. 发起者 -->
+                        <div
+                          class="flex flex-col rounded-xl bg-blue-50/50 p-3 ring-1 ring-blue-100/50 dark:bg-blue-500/5 dark:ring-blue-500/10"
+                        >
+                          <div class="mb-2.5 flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-chat-bubble-bottom-center-text-solid"
+                              class="h-3.5 w-3.5 text-blue-500 dark:text-blue-400"
+                            />
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                              {{ t('views.relationship.initiator') }}
+                            </span>
+                          </div>
+                          <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberA?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-blue-600 dark:text-blue-400">
+                                {{ month.members.find((m) => m.memberId === memberA?.memberId)?.initiateCount ?? 0 }}
+                              </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberB?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-pink-500 dark:text-pink-400">
+                                {{ month.members.find((m) => m.memberId === memberB?.memberId)?.initiateCount ?? 0 }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="mt-3 flex h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div
+                              class="bg-blue-500 dark:bg-blue-400"
+                              :style="{ width: clampBarWidth(getMonthInitiateRatio(month)) + '%' }"
+                            />
+                            <div
+                              class="bg-pink-500 dark:bg-pink-400"
+                              :style="{ width: clampBarWidth(100 - getMonthInitiateRatio(month)) + '%' }"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- 2. 终结者 -->
+                        <div
+                          class="flex flex-col rounded-xl bg-indigo-50/50 p-3 ring-1 ring-indigo-100/50 dark:bg-indigo-500/5 dark:ring-indigo-500/10"
+                        >
+                          <div class="mb-2.5 flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-hand-raised-solid"
+                              class="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400"
+                            />
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                              {{ t('views.relationship.closer') }}
+                            </span>
+                          </div>
+                          <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberA?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-indigo-600 dark:text-indigo-400">
+                                {{ month.members.find((m) => m.memberId === memberA?.memberId)?.closeCount ?? 0 }}
+                              </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberB?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-pink-500 dark:text-pink-400">
+                                {{ month.members.find((m) => m.memberId === memberB?.memberId)?.closeCount ?? 0 }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="mt-3 flex h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div
+                              class="bg-indigo-500 dark:bg-indigo-400"
+                              :style="{ width: clampBarWidth(getMonthCloseRatio(month)) + '%' }"
+                            />
+                            <div
+                              class="bg-pink-500 dark:bg-pink-400"
+                              :style="{ width: clampBarWidth(100 - getMonthCloseRatio(month)) + '%' }"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- 3. 响应时延 -->
+                        <div
+                          class="flex flex-col rounded-xl bg-amber-50/50 p-3 ring-1 ring-amber-100/50 dark:bg-amber-500/5 dark:ring-amber-500/10"
+                        >
+                          <div class="mb-2.5 flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-clock-solid"
+                              class="h-3.5 w-3.5 text-amber-500 dark:text-amber-400"
+                            />
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                              {{ t('views.relationship.responseLatency.title') }}
+                            </span>
+                          </div>
+                          <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberA?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-amber-600 dark:text-amber-500">
+                                {{ getMemberResponseLatencyText(month.month, memberA?.memberId) }}
+                              </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberB?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-amber-600 dark:text-amber-500">
+                                {{ getMemberResponseLatencyText(month.month, memberB?.memberId) }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 4. 锲而不舍 -->
+                        <div
+                          class="flex flex-col rounded-xl bg-purple-50/50 p-3 ring-1 ring-purple-100/50 dark:bg-purple-500/5 dark:ring-purple-500/10"
+                        >
+                          <div class="mb-2.5 flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-arrow-path-solid"
+                              class="h-3.5 w-3.5 text-purple-500 dark:text-purple-400"
+                            />
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                              {{ t('views.relationship.perseverance.title') }}
+                            </span>
+                          </div>
+                          <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberA?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-purple-600 dark:text-purple-400">
+                                {{ getMemberPerseveranceText(month.month, memberA?.memberId) }}
+                              </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                              <span class="w-12 truncate font-medium text-gray-500 dark:text-gray-400">
+                                {{ memberB?.name }}
+                              </span>
+                              <span class="font-black tabular-nums text-purple-600 dark:text-purple-400">
+                                {{ getMemberPerseveranceText(month.month, memberB?.memberId) }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+
+                    <div
+                      v-else
+                      class="flex h-24 items-center justify-center text-sm font-medium text-gray-400 dark:text-gray-500"
+                    >
+                      {{ t('views.relationship.noActivity') }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </SectionCard>
-    </template>
+        </SectionCard>
+      </template>
     </div>
   </div>
 </template>

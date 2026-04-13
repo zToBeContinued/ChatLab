@@ -272,7 +272,7 @@ watch(
 
     <div v-else class="main-content mx-auto max-w-[920px] space-y-6 p-6">
       <!-- 消息画像卡 -->
-    <MessageProfileCard
+      <MessageProfileCard
         v-if="messageTypes.length > 0"
         :session-id="sessionId"
         :session-name="sessionName || ''"

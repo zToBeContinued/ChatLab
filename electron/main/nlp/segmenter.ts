@@ -385,7 +385,16 @@ export function batchSegmentWithFrequency(
   locale: SupportedLocale,
   options: BatchSegmentOptions = {}
 ): BatchSegmentResult {
-  const { minLength, minCount = 2, topN = 100, posFilterMode, customPosTags, enableStopwords, dictType, excludeWords } = options
+  const {
+    minLength,
+    minCount = 2,
+    topN = 100,
+    posFilterMode,
+    customPosTags,
+    enableStopwords,
+    dictType,
+    excludeWords,
+  } = options
   const wordFrequency = new Map<string, number>()
   const excludeSet = excludeWords?.length ? new Set(excludeWords.map((w) => w.toLowerCase())) : null
 

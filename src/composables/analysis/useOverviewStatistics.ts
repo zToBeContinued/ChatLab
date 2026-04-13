@@ -136,9 +136,7 @@ export function useOverviewStatistics(props: UseOverviewStatisticsProps, weekday
   const lateNightChat = computed(() => {
     if (!props.hourlyActivity.length) return { count: 0, ratio: 0 }
     const total = props.hourlyActivity.reduce((s, h) => s + h.messageCount, 0)
-    const count = props.hourlyActivity
-      .filter((h) => h.hour >= 0 && h.hour <= 4)
-      .reduce((s, h) => s + h.messageCount, 0)
+    const count = props.hourlyActivity.filter((h) => h.hour >= 0 && h.hour <= 4).reduce((s, h) => s + h.messageCount, 0)
     return {
       count,
       ratio: total > 0 ? Math.round((count / total) * 100) : 0,

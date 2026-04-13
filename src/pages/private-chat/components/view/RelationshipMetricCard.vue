@@ -49,7 +49,10 @@ const hasHeaderExtra = computed(() => Boolean(slots['header-extra']))
     <div class="flex h-full flex-col">
       <div class="grid grid-cols-2 gap-2">
         <div class="flex min-w-0 flex-col items-center rounded-xl bg-white px-1 py-1.5 text-center dark:bg-transparent">
-          <div class="w-full truncate text-[10px] font-semibold tracking-wide text-gray-500 dark:text-gray-400" :title="leftName">
+          <div
+            class="w-full truncate text-[10px] font-semibold tracking-wide text-gray-500 dark:text-gray-400"
+            :title="leftName"
+          >
             {{ leftName }}
           </div>
           <div class="mt-1 font-black font-mono leading-none tabular-nums" :class="valueClass">
@@ -57,7 +60,10 @@ const hasHeaderExtra = computed(() => Boolean(slots['header-extra']))
           </div>
         </div>
         <div class="flex min-w-0 flex-col items-center rounded-xl bg-white px-1 py-1.5 text-center dark:bg-transparent">
-          <div class="w-full truncate text-[10px] font-semibold tracking-wide text-gray-500 dark:text-gray-400" :title="rightName">
+          <div
+            class="w-full truncate text-[10px] font-semibold tracking-wide text-gray-500 dark:text-gray-400"
+            :title="rightName"
+          >
             {{ rightName }}
           </div>
           <div class="mt-1 font-black font-mono leading-none tabular-nums" :class="valueClass">

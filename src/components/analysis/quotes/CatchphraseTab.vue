@@ -101,7 +101,12 @@ async function loadCatchphraseAnalysis() {
   isLoading.value = true
   try {
     catchphraseAnalysis.value = await window.chatApi.getCatchphraseAnalysis(props.sessionId, props.timeFilter)
-    console.log('[CatchphraseTab] API result: members:', catchphraseAnalysis.value?.members.length, 'per-member catchphrases:', catchphraseAnalysis.value?.members.map((m) => ({ name: m.name, count: m.catchphrases.length })))
+    console.log(
+      '[CatchphraseTab] API result: members:',
+      catchphraseAnalysis.value?.members.length,
+      'per-member catchphrases:',
+      catchphraseAnalysis.value?.members.map((m) => ({ name: m.name, count: m.catchphrases.length }))
+    )
   } catch (error) {
     console.error('Failed to load catchphrase analysis:', error)
   } finally {

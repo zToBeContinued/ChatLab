@@ -778,10 +778,7 @@ const getMergeFileProgressText = (file: MergeFileInfo) =>
           </div>
         </div>
       </div>
-      <p
-        v-if="formatSelectorFilePath || hasImportLog"
-        class="text-xs text-gray-500 dark:text-gray-400"
-      >
+      <p v-if="formatSelectorFilePath || hasImportLog" class="text-xs text-gray-500 dark:text-gray-400">
         {{ t('home.import.errors.actionHint') }}
       </p>
       <div class="flex gap-2">

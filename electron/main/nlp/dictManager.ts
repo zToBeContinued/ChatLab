@@ -108,13 +108,19 @@ export async function downloadDict(
     if (buffer.length < MIN_DICT_SIZE) {
       const preview = buffer.subarray(0, 200).toString('utf-8')
       console.error(`[NLP DictManager] Downloaded file too small (${buffer.length} bytes), preview: ${preview}`)
-      return { success: false, error: `Downloaded file is invalid (${buffer.length} bytes). The dictionary URL may not be available yet.` }
+      return {
+        success: false,
+        error: `Downloaded file is invalid (${buffer.length} bytes). The dictionary URL may not be available yet.`,
+      }
     }
 
     const head = buffer.subarray(0, 50).toString('utf-8').trim()
     if (head.startsWith('<!') || head.startsWith('<html')) {
       console.error(`[NLP DictManager] Downloaded file appears to be HTML, not a dict file`)
-      return { success: false, error: 'Downloaded file is HTML, not a dictionary file. The URL may not be deployed yet.' }
+      return {
+        success: false,
+        error: 'Downloaded file is HTML, not a dictionary file. The URL may not be deployed yet.',
+      }
     }
 
     fs.writeFileSync(tmpPath, buffer)

@@ -62,7 +62,12 @@ const viewTimeFilter = computed(() => ({
     <!-- 子 Tab 内容 -->
     <div class="flex-1 min-h-0 overflow-y-auto">
       <Transition name="fade" mode="out-in">
-        <MessageView v-if="activeSubTab === 'message'" :session-id="props.sessionId" :session-name="props.sessionName" :time-filter="viewTimeFilter" />
+        <MessageView
+          v-if="activeSubTab === 'message'"
+          :session-id="props.sessionId"
+          :session-name="props.sessionName"
+          :time-filter="viewTimeFilter"
+        />
         <InteractionView
           v-else-if="activeSubTab === 'interaction'"
           :session-id="props.sessionId"

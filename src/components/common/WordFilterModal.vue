@@ -123,9 +123,7 @@ function handleClearAllWords() {
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-white/5">
           <div class="flex items-center gap-3">
-            <div
-              class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-pink-400 to-pink-600"
-            >
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-pink-400 to-pink-600">
               <UIcon name="i-heroicons-funnel" class="h-4.5 w-4.5 text-white" />
             </div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -143,13 +141,7 @@ function handleClearAllWords() {
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
                 {{ t('wordFilter.schemeList') }}
               </span>
-              <UButton
-                icon="i-heroicons-plus"
-                size="xs"
-                variant="ghost"
-                color="primary"
-                @click="handleCreateScheme"
-              />
+              <UButton icon="i-heroicons-plus" size="xs" variant="ghost" color="primary" @click="handleCreateScheme" />
             </div>
             <div class="flex-1 overflow-y-auto px-2 pb-2">
               <div
@@ -210,13 +202,7 @@ function handleClearAllWords() {
                   >
                     {{ isDefault ? t('wordFilter.isDefault') : t('wordFilter.setDefault') }}
                   </UButton>
-                  <UButton
-                    size="xs"
-                    variant="soft"
-                    color="error"
-                    icon="i-heroicons-trash"
-                    @click="handleDeleteScheme"
-                  >
+                  <UButton size="xs" variant="soft" color="error" icon="i-heroicons-trash" @click="handleDeleteScheme">
                     {{ t('wordFilter.deleteScheme') }}
                   </UButton>
                 </div>
@@ -245,9 +231,7 @@ function handleClearAllWords() {
                   <div class="mb-1.5 flex items-center justify-between">
                     <label class="text-xs font-medium text-gray-600 dark:text-gray-400">
                       {{ t('wordFilter.wordList') }}
-                      <span class="ml-1 text-gray-400 dark:text-gray-500">
-                        ({{ selectedScheme.words.length }})
-                      </span>
+                      <span class="ml-1 text-gray-400 dark:text-gray-500">({{ selectedScheme.words.length }})</span>
                     </label>
                     <UButton
                       v-if="selectedScheme.words.length > 0"
