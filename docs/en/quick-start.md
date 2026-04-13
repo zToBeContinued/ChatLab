@@ -16,11 +16,11 @@ This page tells you what the docs can help with and gives the shortest reading p
 ## Fastest path
 
 ::: tip Suggested path
+
 1. [Export Chat Records](./usage/how-to-export.md)
 2. [Import Chat Records](./usage/how-to-import.md)
 3. [How to Configure AI](./usage/how-to-config-ai.md)
-4. [Troubleshooting](./usage/troubleshooting.md)
-:::
+4. [Troubleshooting](./usage/troubleshooting.md) :::
 
 ## Useful links
 

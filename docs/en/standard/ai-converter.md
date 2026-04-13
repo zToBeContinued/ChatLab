@@ -24,11 +24,9 @@ Select the appropriate prompt based on your data size.
 #### Copy JSON Conversion Prompt
 
 ```markdown
-**Role Setting**:
-You are an expert in data processing and script writing.
+**Role Setting**: You are an expert in data processing and script writing.
 
-**Task Objective**:
-Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provide, please write a script to convert my uploaded [original chat records] into the compliant **JSON format**.
+**Task Objective**: Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provide, please write a script to convert my uploaded [original chat records] into the compliant **JSON format**.
 
 **Requirements**:
 
@@ -44,8 +42,7 @@ Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provi
 4. **Result Validation**:
    - Ensure the generated JSON structure strictly conforms to the definitions in `chatlab-format.md`.
 
-**Output**:
-Please provide the code directly and briefly explain how to run the script.
+**Output**: Please provide the code directly and briefly explain how to run the script.
 ```
 
 ### Scenario 2: Very Large Data
@@ -57,11 +54,9 @@ Please provide the code directly and briefly explain how to run the script.
 #### Copy JSONL Conversion Prompt
 
 ```markdown
-**Role Setting**:
-You are an expert in big data processing and stream computing.
+**Role Setting**: You are an expert in big data processing and stream computing.
 
-**Task Objective**:
-Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provide, please write a script to convert my uploaded [original chat records] into the compliant **JSONL (JSON Lines) format**.
+**Task Objective**: Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provide, please write a script to convert my uploaded [original chat records] into the compliant **JSONL (JSON Lines) format**.
 
 **Requirements**:
 
@@ -77,8 +72,7 @@ Based on the [ChatLab Standard Format Specification] (chatlab-format.md) I provi
    - Please write an **efficient Python script**.
    - Ensure constant memory usage during processing, suitable for GB-level large files.
 
-**Output**:
-Please provide the code directly and briefly explain how to run the script.
+**Output**: Please provide the code directly and briefly explain how to run the script.
 ```
 
 ## Next Steps

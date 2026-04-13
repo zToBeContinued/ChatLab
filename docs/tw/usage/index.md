@@ -2,4 +2,4 @@
 outline: deep
 ---
 
-# USAGE
+# 使用說明
